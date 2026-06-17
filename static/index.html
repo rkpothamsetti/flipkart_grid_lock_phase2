@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrafficVision AI - Enforcement Hub</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i class="fa-solid fa-shield-halved logo-icon"></i>
+                <span class="logo-text">TrafficVision <span class="accent-text">AI</span></span>
+            </div>
+            <nav class="nav-links">
+                <a href="#" class="nav-link active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="#" class="nav-link"><i class="fa-solid fa-list-check"></i> Enforcement Logs</a>
+                <a href="#" class="nav-link"><i class="fa-solid fa-triangle-exclamation"></i> Violations</a>
+                <a href="#" class="nav-link"><i class="fa-solid fa-users-viewfinder"></i> Repeat Offenders</a>
+            </nav>
+            <div class="system-status-widget">
+                <div class="status-header">
+                    <span class="status-dot online"></span>
+                    <span class="status-title">System Status</span>
+                </div>
+                <div class="status-metric">
+                    <span class="metric-label">API Latency:</span>
+                    <span class="metric-value" id="latency-val">0ms</span>
+                </div>
+                <div class="status-metric">
+                    <span class="metric-label">Pipeline Load:</span>
+                    <span class="metric-value">0.8s</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="plate-search-input" placeholder="Search by license plate number (e.g. MH12)...">
+                </div>
+                <div class="user-profile">
+                    <i class="fa-solid fa-bell notification-bell"></i>
+                    <div class="profile-avatar">TO</div>
+                </div>
+            </header>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Row 1: KPI Stats Cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper helmet-bg">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Helmet Compliance</span>
+                            <h3 class="stat-number" id="stat-helmet">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper seatbelt-bg">
+                            <i class="fa-solid fa-person-seatbelt"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Seatbelt Compliance</span>
+                            <h3 class="stat-number" id="stat-seatbelt">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper wrongside-bg">
+                            <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Wrong Side Driving</span>
+                            <h3 class="stat-number" id="stat-wrongside">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper total-bg">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Violations</span>
+                            <h3 class="stat-number" id="stat-total">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Live Feed & Upload + Analytics -->
+                <div class="content-row">
+                    <!-- Left Column: Camera / Upload -->
+                    <div class="card feed-card">
+                        <div class="card-header">
+                            <h4><i class="fa-solid fa-video red-pulse"></i> Live Traffic Feed Simulator</h4>
+                            <span class="badge live">LIVE</span>
+                        </div>
+                        <div class="camera-stream" id="camera-stream-container">
+                            <div class="stream-placeholder">
+                                <i class="fa-solid fa-cloud-arrow-up upload-huge-icon"></i>
+                                <p>Drag & drop or select an image to process</p>
+                                <label class="upload-btn">
+                                    <input type="file" id="file-upload" accept="image/*" style="display: none;">
+                                    Browse Image
+                                </label>
+                            </div>
+                        </div>
+                        <div class="quick-test-panel">
+                            <h5>Quick Test Scenarios (Simulate specific violations)</h5>
+                            <div class="test-buttons">
+                                <button class="btn-scenario" data-type="helmet">Helmet Violation</button>
+                                <button class="btn-scenario" data-type="seatbelt">Seatbelt Violation</button>
+                                <button class="btn-scenario" data-type="triple">Triple Riding</button>
+                                <button class="btn-scenario" data-type="wrong">Wrong Side</button>
+                                <button class="btn-scenario" data-type="stopline">Stop Line</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Analytics Charts -->
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h4><i class="fa-solid fa-chart-pie"></i> Violation Analytics</h4>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="violationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Live Violation Log & Repeat Offenders -->
+                <div class="content-row">
+                    <!-- Left: Real-time Event Feed -->
+                    <div class="card log-card">
+                        <div class="card-header">
+                            <h4><i class="fa-solid fa-list"></i> Real-Time Enforcement Log</h4>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Camera ID</th>
+                                        <th>Timestamp</th>
+                                        <th>Vehicle</th>
+                                        <th>Violation Type</th>
+                                        <th>Plate Number</th>
+                                        <th>Confidence</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="violations-tbody">
+                                    <!-- Dynamic rows -->
+                                    <tr>
+                                        <td colspan="7" class="empty-state">No violations detected yet. Try uploading an image.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Repeat Offenders List -->
+                    <div class="card offenders-card">
+                        <div class="card-header">
+                            <h4><i class="fa-solid fa-users"></i> Repeat Offenders Intelligence</h4>
+                        </div>
+                        <div class="offenders-list" id="offenders-list-container">
+                            <!-- Dynamic repeat offenders -->
+                            <p class="empty-state">No repeat offenders registered yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Evidence Detail Modal -->
+    <div class="modal" id="evidence-modal">
+        <div class="modal-overlay" id="modal-close-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-invoice"></i> Evidence Dossier</h3>
+                <button class="close-btn" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="evidence-comparison">
+                    <div class="image-box">
+                        <span class="image-label">Original Camera Frame</span>
+                        <img id="modal-original-img" src="" alt="Original Image">
+                    </div>
+                    <div class="image-box">
+                        <span class="image-label">Enhanced & Annotated Evidence</span>
+                        <img id="modal-annotated-img" src="" alt="Annotated Evidence">
+                    </div>
+                </div>
+                <div class="evidence-details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Plate Number</span>
+                        <span class="detail-value plate-badge" id="modal-plate">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Violation Category</span>
+                        <span class="detail-value text-red" id="modal-violation">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Detection Confidence</span>
+                        <span class="detail-value" id="modal-confidence">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Capture Timestamp</span>
+                        <span class="detail-value" id="modal-timestamp">--</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <span class="detail-label">AI Explanatory Reasoning</span>
+                        <p class="explanation-box" id="modal-explanation">--</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-close-action">Close Dossier</button>
+                <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Challan</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
